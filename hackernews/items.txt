@@ -1,0 +1,10 @@
+{24331635 Keli: A programming language to make Functional Programming a joy for users story https://keli-language.gitbook.io/doc/}
+{24331408 How NASA and ISRO discovered water on the Moon story https://jatan.space/how-nasa-and-chandrayaan-discovered-water-on-the-moon/}
+{24329900 PinePhone Manjaro Community Edition story https://www.pine64.org/2020/08/31/pinephone-manjaro-community-edition/}
+{24332244 Mathematicians Report New Discovery About the Dodecahedron story https://www.quantamagazine.org/mathematicians-report-new-discovery-about-the-dodecahedron-20200831/}
+{24331416 Making Navigation Work (2017) story http://gameshelf.jmac.org/2017/05/making-navigation-work/}
+{24329412 Google, the Stupidity Amplifier (2016) story http://www.gregegan.net/ESSAYS/GOOGLE/Google.html}
+{24332187 As above, so below, part 2. Bare metal Rust generics story https://www.ecorax.net/as-above-so-below-2/}
+{24328617 Do we really travel through time with the speed of light? story https://backreaction.blogspot.com/2020/08/do-we-really-travel-through-time-with.html}
+{24329485 Bits of History, Words of Advice story https://gbracha.blogspot.com/2020/05/bits-of-history-words-of-advice.html}
+{24329874 Nim – version 1.2.6 and 1.0.8 released story https://nim-lang.org/blog/2020/07/30/versions-126-and-108-released.html}
