@@ -3,9 +3,11 @@ package main
 import (
 	"hackernews-telegram/hackernews"
 	"log"
+	"strings"
 	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var numericKeyboard = tgbotapi.NewReplyKeyboard(
@@ -16,9 +18,10 @@ var numericKeyboard = tgbotapi.NewReplyKeyboard(
 	),
 )
 
+// Shall be used to send the latest unread items every hour or so.
 func sayHello(bot *tgbotapi.BotAPI) {
 	ticker := time.NewTicker(10 * time.Second)
-	for _ = range ticker.C {
+	for range ticker.C {
 		hello := tgbotapi.NewMessage(361377774, "Hi there mofocker")
 		bot.Send(hello)
 	}
@@ -30,7 +33,7 @@ func main() {
 		log.Panic(err)
 	}
 
-	bot.Debug = true
+	// bot.Debug = true
 
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
@@ -38,10 +41,14 @@ func main() {
 	u.Timeout = 60
 
 	updates, err := bot.GetUpdatesChan(u)
-	go sayHello(bot)
+
+	go hackernews.UpdatePosts()
 
 	for update := range updates {
 		if update.Message == nil {
+			continue
+		}
+		if update.Message.Chat.ID != 361377774 {
 			continue
 		}
 
@@ -49,15 +56,24 @@ func main() {
 
 		if update.Message.IsCommand() {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+
+			if strings.Contains(update.Message.Command(), "add_") {
+				msg.Text = strings.Replace(
+					update.Message.Command(), "add_", "", 1)
+				bot.Send(msg)
+				continue
+			}
+
 			switch update.Message.Command() {
 			case "help":
 				msg.Text = "type /sayhi or /status."
-			case "sayhi":
-				msg.Text = "Hi :)"
-			case "status":
-				msg.Text = "I'm ok."
+
+			case "ping":
+				msg.Text = "pong"
+
 			case "latest":
-				msg.Text = hackernews.PrintItems()
+				msg.Text = hackernews.TextItems()
+
 			default:
 				msg.Text = "I don't know that command"
 				msg.ReplyMarkup = numericKeyboard

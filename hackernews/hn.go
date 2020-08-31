@@ -4,9 +4,11 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const hackerURL = "https://news.ycombinator.com/?item="
@@ -15,23 +17,47 @@ const topStories = apiURL + "topstories"
 const getItem = apiURL + "item/"
 const tmpfile = "/tmp/hackernews-reads.txt"
 
-type hnResponse struct {
-	ID        int    `json:"id"`
-	Title     string `json:"title"`
-	URL       string `json:"url"`
-	Score     int    `json:"score"`
-	ItemType  string `json:"type"`
-	Kids      []int  `json:"kids"`
-	comments  int
-	hackerURL string
+type HNresponse struct {
+	ID       int    `json:"id"`
+	Title    string `json:"title"`
+	Score    int    `json:"score"`
+	ItemType string `json:"type"`
+	Kids     []int  `json:"kids"`
+	comments int
+	URL      string
 }
 
 func itemURL(itemID string) string {
 	return getItem + strings.TrimSpace(itemID) + ".json?print=pretty"
 }
 
-func latestItems() []hnResponse {
+// TextItems returns the latest items formatted for the Telegram reply
+// along with the post ids so they can be marked as read
+func TextItems() string {
+	var text string
+	db := Database{DB: InitDB()}
+	ni := db.getFive()
 
+	for _, each := range ni {
+		text = text + each.Title + "\nScore " + strconv.Itoa(each.Score) +
+			" | /add_" + strconv.Itoa(each.ID) + "\n" + each.URL +
+			"\n\n"
+	}
+
+	return text
+}
+
+// UpdatePosts updates the database with the latest posts
+func UpdatePosts() {
+	getLatest()
+	ticker := time.NewTicker(30 * time.Minute)
+	for range ticker.C {
+		getLatest()
+	}
+}
+
+func getLatest() {
+	db := Database{DB: InitDB()}
 	resp, err := http.Get(topStories + ".json?print=pretty")
 	if err != nil {
 		panic(err)
@@ -42,41 +68,34 @@ func latestItems() []hnResponse {
 	scanner.Scan()
 
 	text := strings.Trim(scanner.Text(), "[]")
-	ids := strings.Split(text, ", ")
-	items := ids[:3]
-
-	newItems := make([]hnResponse, 0)
+	items := strings.Split(text, ", ")
 
 	for _, item := range items {
+		if db.checkItem(item) {
+			continue
+		}
 		resp, err = http.Get(itemURL(item))
 		if err != nil {
 			panic(err)
 		}
 		defer resp.Body.Close()
 
-		var js hnResponse
+		var js HNresponse
 		err = json.NewDecoder(resp.Body).Decode(&js)
 
 		js.comments = len(js.Kids)
-		js.hackerURL = hackerURL + strconv.Itoa(js.ID)
+		js.URL = hackerURL + strconv.Itoa(js.ID)
 
 		if err != nil {
 			fmt.Println(err)
 		}
-		newItems = append(newItems, js)
+		db.addItem(js)
 	}
+	log.Println("Finished DB update")
 
-	return newItems
 }
 
-func PrintItems() string {
-	var text string
-	ni := latestItems()
+// Function to keep grabbing the latest posts and adding them to a database.
+// -- Filter out anything that isnt a story
 
-	for _, each := range ni {
-		text = text + each.Title + "\nComments " + strconv.Itoa(each.comments) +
-			" | Score " + strconv.Itoa(each.Score) + "\n" + each.hackerURL +
-			"\n\n"
-	}
-	return text
-}
+// Function to return 3 - 5 unread posts and mark as read.
