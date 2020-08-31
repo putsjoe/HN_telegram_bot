@@ -26,7 +26,7 @@ func InitDB() *sql.DB {
 	return db
 }
 
-func (db Database) addItem(hn HNresponse) {
+func (db Database) addItem(hn hnResponse) {
 	st, err := db.DB.Prepare(
 		"INSERT OR IGNORE INTO posts(ID, Title, Score, Comments, URL) " +
 			"VALUES (?,?,?,?,?)")
@@ -62,11 +62,11 @@ func (db Database) markRead(ids []int) {
 	// log.Println("Marked as Read - ", strings.Join(sids, ", "))
 }
 
-func (db Database) getFive() []HNresponse {
-	posts := make([]HNresponse, 0)
+func (db Database) getFive() []hnResponse {
+	posts := make([]hnResponse, 0)
 	rows, _ := db.DB.Query("select ID, Title, Score, URL FROM " +
 		"posts WHERE read = 0 LIMIT 5;")
-	var itm HNresponse
+	var itm hnResponse
 	var ids []int
 
 	for rows.Next() {
@@ -75,5 +75,72 @@ func (db Database) getFive() []HNresponse {
 		ids = append(ids, itm.ID)
 	}
 	go db.markRead(ids)
+	return posts
+}
+
+func (db Database) savePost(userID int, postID int) {
+	st, err := db.DB.Prepare("INSERT INTO user(userID, postID) VALUES(?, ?)")
+	_, err = st.Exec(userID, postID)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func (db Database) deletePost(userID int, postID int) {
+	st, err := db.DB.Prepare("DELETE FROM user WHERE userID=? AND postID=?")
+	_, err = st.Exec(userID, postID)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func (db Database) stats() (int, int) {
+	var u, t int
+	exists := db.DB.QueryRow("SELECT count(*) FROM posts WHERE read = 0")
+	err := exists.Scan(&u)
+	if err != nil {
+		fmt.Println(err)
+	}
+	exists = db.DB.QueryRow("SELECT count(*) FROM posts")
+	err = exists.Scan(&t)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return u, t
+}
+
+func (db Database) getSavedPosts(userID int) []hnResponse {
+
+	rows, err := db.DB.Query("SELECT postID FROM user WHERE userID=?", userID)
+	if err != nil {
+		fmt.Println(err)
+		if err == sql.ErrNoRows {
+			return nil
+		}
+	}
+	var ids []int
+	var id int
+
+	for rows.Next() {
+		rows.Scan(&id)
+		ids = append(ids, id)
+	}
+
+	// Convert ids to strings
+	var sids []string
+	for _, v := range ids {
+		sids = append(sids, strconv.Itoa(v))
+	}
+	// Prepare statement to get all this data
+	sql := fmt.Sprintf(
+		"SELECT ID,Title,URL FROM posts WHERE ID IN (%s);", strings.Join(sids, ","))
+	rows, err = db.DB.Query(sql)
+	posts := make([]hnResponse, 0)
+	var itm hnResponse
+
+	for rows.Next() {
+		rows.Scan(&itm.ID, &itm.Title, &itm.URL)
+		posts = append(posts, itm)
+	}
 	return posts
 }

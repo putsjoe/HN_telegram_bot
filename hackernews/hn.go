@@ -11,13 +11,13 @@ import (
 	"time"
 )
 
-const hackerURL = "https://news.ycombinator.com/?item="
+const hackerURL = "https://news.ycombinator.com/item?id="
 const apiURL = "https://hacker-news.firebaseio.com/v0/"
 const topStories = apiURL + "topstories"
 const getItem = apiURL + "item/"
 const tmpfile = "/tmp/hackernews-reads.txt"
 
-type HNresponse struct {
+type hnResponse struct {
 	ID       int    `json:"id"`
 	Title    string `json:"title"`
 	Score    int    `json:"score"`
@@ -29,31 +29,6 @@ type HNresponse struct {
 
 func itemURL(itemID string) string {
 	return getItem + strings.TrimSpace(itemID) + ".json?print=pretty"
-}
-
-// TextItems returns the latest items formatted for the Telegram reply
-// along with the post ids so they can be marked as read
-func TextItems() string {
-	var text string
-	db := Database{DB: InitDB()}
-	ni := db.getFive()
-
-	for _, each := range ni {
-		text = text + each.Title + "\nScore " + strconv.Itoa(each.Score) +
-			" | /add_" + strconv.Itoa(each.ID) + "\n" + each.URL +
-			"\n\n"
-	}
-
-	return text
-}
-
-// UpdatePosts updates the database with the latest posts
-func UpdatePosts() {
-	getLatest()
-	ticker := time.NewTicker(30 * time.Minute)
-	for range ticker.C {
-		getLatest()
-	}
 }
 
 func getLatest() {
@@ -80,7 +55,7 @@ func getLatest() {
 		}
 		defer resp.Body.Close()
 
-		var js HNresponse
+		var js hnResponse
 		err = json.NewDecoder(resp.Body).Decode(&js)
 
 		js.comments = len(js.Kids)
@@ -95,7 +70,63 @@ func getLatest() {
 
 }
 
-// Function to keep grabbing the latest posts and adding them to a database.
-// -- Filter out anything that isnt a story
+// UpdatePosts updates the database with the latest posts
+func UpdatePosts() {
+	getLatest()
+	ticker := time.NewTicker(1 * time.Hour)
+	for range ticker.C {
+		getLatest()
+	}
+}
 
-// Function to return 3 - 5 unread posts and mark as read.
+// SavePost saves the given post ID for the user to read later
+func SavePost(userID int, postID int) {
+	db := Database{DB: InitDB()}
+	db.savePost(userID, postID)
+}
+
+// DeletePost removes the given id from the user's list
+func DeletePost(userID int, postID int) {
+	db := Database{DB: InitDB()}
+	db.deletePost(userID, postID)
+}
+
+// UnreadItems returns the number of items in the database unread and total
+func UnreadItems() (int, int) {
+	db := Database{DB: InitDB()}
+	return db.stats()
+}
+
+// TextItems returns the latest items formatted for the Telegram reply
+// along with the post ids so they can be marked as read
+func TextItems() string {
+	var text string
+	db := Database{DB: InitDB()}
+	ni := db.getFive()
+
+	for _, each := range ni {
+		text = text + each.Title + "\nScore " + strconv.Itoa(each.Score) +
+			" | /add_" + strconv.Itoa(each.ID) + "\n" + each.URL +
+			"\n\n"
+	}
+
+	return text
+}
+
+// GetSavedPosts returns the user's saved posts
+func GetSavedPosts(userID int) string {
+	db := Database{DB: InitDB()}
+	posts := db.getSavedPosts(userID)
+
+	if len(posts) == 0 {
+		return "No Saved Posts"
+	}
+
+	var text string
+	for _, post := range posts {
+		text = text + post.Title + " | /del_" + strconv.Itoa(post.ID) +
+			"\n" + post.URL + "\n\n"
+	}
+
+	return text
+}

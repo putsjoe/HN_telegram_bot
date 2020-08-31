@@ -1,10 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"hackernews-telegram/hackernews"
 	"log"
+	"strconv"
 	"strings"
-	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	_ "github.com/mattn/go-sqlite3"
@@ -12,20 +13,10 @@ import (
 
 var numericKeyboard = tgbotapi.NewReplyKeyboard(
 	tgbotapi.NewKeyboardButtonRow(
-		tgbotapi.NewKeyboardButton("/sayhi"),
-		tgbotapi.NewKeyboardButton("/status"),
+		tgbotapi.NewKeyboardButton("/list"),
 		tgbotapi.NewKeyboardButton("/latest"),
 	),
 )
-
-// Shall be used to send the latest unread items every hour or so.
-func sayHello(bot *tgbotapi.BotAPI) {
-	ticker := time.NewTicker(10 * time.Second)
-	for range ticker.C {
-		hello := tgbotapi.NewMessage(361377774, "Hi there mofocker")
-		bot.Send(hello)
-	}
-}
 
 func main() {
 	bot, err := tgbotapi.NewBotAPI("1171278568:AAHizulfKvIfASaC0YCKdlXyl0ZFLzRfmwE")
@@ -58,8 +49,27 @@ func main() {
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
 
 			if strings.Contains(update.Message.Command(), "add_") {
-				msg.Text = strings.Replace(
+				p := strings.Replace(
 					update.Message.Command(), "add_", "", 1)
+				postID, err := strconv.Atoi(p)
+				if err != nil {
+					fmt.Println(err)
+				}
+				hackernews.SavePost(int(update.Message.Chat.ID), postID)
+				msg.Text = "Saved " + p
+				bot.Send(msg)
+				continue
+			}
+
+			if strings.Contains(update.Message.Command(), "del_") {
+				p := strings.Replace(
+					update.Message.Command(), "del_", "", 1)
+				postID, err := strconv.Atoi(p)
+				if err != nil {
+					fmt.Println(err)
+				}
+				hackernews.DeletePost(int(update.Message.Chat.ID), postID)
+				msg.Text = "Deleted " + p
 				bot.Send(msg)
 				continue
 			}
@@ -69,10 +79,15 @@ func main() {
 				msg.Text = "type /sayhi or /status."
 
 			case "ping":
-				msg.Text = "pong"
+				u, t := hackernews.UnreadItems()
+				msg.Text = fmt.Sprintf("pong - Unread: %d  Total: %d", u, t)
 
 			case "latest":
 				msg.Text = hackernews.TextItems()
+
+			case "saves":
+			case "list":
+				msg.Text = hackernews.GetSavedPosts(int(update.Message.Chat.ID))
 
 			default:
 				msg.Text = "I don't know that command"

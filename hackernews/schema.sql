@@ -9,5 +9,7 @@ CREATE TABLE posts(
 );
 
 CREATE TABLE user(
-    ID          integer primary key
+    ID          integer primary key,
+    userID      integer not null,
+    postID      integer not null
 );
