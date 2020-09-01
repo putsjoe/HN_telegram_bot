@@ -106,8 +106,7 @@ func TextItems() string {
 
 	for _, each := range ni {
 		text = text + each.Title + "\nScore " + strconv.Itoa(each.Score) +
-			" | /add_" + strconv.Itoa(each.ID) + "\n" + each.URL +
-			"\n\n"
+			" | /add_" + strconv.Itoa(each.ID) + "\n\n"
 	}
 
 	return text
