@@ -64,6 +64,9 @@ func getLatest() {
 		if err != nil {
 			fmt.Println(err)
 		}
+		if js.Score < 11 {
+			continue
+		}
 		db.addItem(js)
 	}
 	log.Println("Finished DB update")
