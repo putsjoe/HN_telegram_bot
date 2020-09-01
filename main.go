@@ -1,9 +1,11 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"hackernews-telegram/hackernews"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 
@@ -19,7 +21,17 @@ var numericKeyboard = tgbotapi.NewReplyKeyboard(
 )
 
 func main() {
-	bot, err := tgbotapi.NewBotAPI("1171278568:AAHizulfKvIfASaC0YCKdlXyl0ZFLzRfmwE")
+
+	apiKey := flag.String("key", "", "The Telegram bot API key")
+	userID := flag.Int("user", 0, "Restrict bot to given user ID")
+	flag.Parse()
+
+	if *apiKey == "" {
+		fmt.Println("No API key supplied, use the -key flag")
+		os.Exit(1)
+	}
+
+	bot, err := tgbotapi.NewBotAPI(*apiKey)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -39,7 +51,7 @@ func main() {
 		if update.Message == nil {
 			continue
 		}
-		if update.Message.Chat.ID != 361377774 {
+		if *userID > 0 && update.Message.Chat.ID != int64(*userID) {
 			continue
 		}
 
