@@ -58,14 +58,14 @@ func getLatest() {
 		var js hnResponse
 		err = json.NewDecoder(resp.Body).Decode(&js)
 
+		if js.Score < 11 {
+			continue
+		}
 		js.comments = len(js.Kids)
 		js.URL = hackerURL + strconv.Itoa(js.ID)
 
 		if err != nil {
 			fmt.Println(err)
-		}
-		if js.Score < 11 {
-			continue
 		}
 		db.addItem(js)
 	}
@@ -127,8 +127,7 @@ func GetSavedPosts(userID int) string {
 	var text string
 	for _, post := range posts {
 		text = text + post.Title + " | /del_" + strconv.Itoa(post.ID) +
-			"\n" + post.URL + "\n\n"
+			"\n" + "<a href=\"" + post.URL + "\">HN Link</a>\n\n"
 	}
-
 	return text
 }

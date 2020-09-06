@@ -20,6 +20,18 @@ var numericKeyboard = tgbotapi.NewReplyKeyboard(
 	),
 )
 
+func newMessage(chatID int64, text string) tgbotapi.MessageConfig {
+	return tgbotapi.MessageConfig{
+		BaseChat: tgbotapi.BaseChat{
+			ChatID:           chatID,
+			ReplyToMessageID: 0,
+		},
+		Text:                  text,
+		ParseMode:             "HTML",
+		DisableWebPagePreview: false,
+	}
+}
+
 func main() {
 
 	apiKey := flag.String("key", "", "The Telegram bot API key")
@@ -58,7 +70,7 @@ func main() {
 		log.Printf("[%d] %s", update.Message.Chat.ID, update.Message.Text)
 
 		if update.Message.IsCommand() {
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "")
+			msg := newMessage(update.Message.Chat.ID, "")
 
 			if strings.Contains(update.Message.Command(), "add_") {
 				p := strings.Replace(
@@ -105,7 +117,11 @@ func main() {
 				msg.Text = "I don't know that command"
 				msg.ReplyMarkup = numericKeyboard
 			}
-			bot.Send(msg)
+			if _, err := bot.Send(msg); err != nil {
+				log.Println("bot.Send: ", err)
+				log.Println("Message: ", msg)
+			}
+
 			continue
 		}
 
