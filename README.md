@@ -31,4 +31,8 @@ Sending the `/ping` command to the bot returns the number of posts in the databa
 - The first run has 500 posts marked as unread. Needs a command to mark all as read or a flag to pass to the service.
 - Any time unread posts are returned, they are marked as read, therefore if there is more than one user they wont see all new. Needs support for multi user read.
 - Upon saving or deleting a post, the command is entered and so scrolls to the bottom. Ideally a system to save and delete without having to enter a command but this may not be possible with Telegram.
+- Golang code improvements - Tests, naming, packaging
+
+### Further Notes
+- An API key is exposed in old commits, however this bot has now been removed and so the API key will not work.
 
