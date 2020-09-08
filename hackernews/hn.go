@@ -127,7 +127,7 @@ func GetSavedPosts(userID int) string {
 	var text string
 	for _, post := range posts {
 		text = text + post.Title + " | /del_" + strconv.Itoa(post.ID) +
-			"\n" + "<a href=\"" + post.URL + "\">HN Link</a>\n\n"
+			"\n" + post.URL + "\n\n"
 	}
 	return text
 }
