@@ -58,7 +58,7 @@ func getLatest() {
 		var js hnResponse
 		err = json.NewDecoder(resp.Body).Decode(&js)
 
-		if js.Score < 11 {
+		if js.Score < 16 {
 			continue
 		}
 		js.comments = len(js.Kids)
