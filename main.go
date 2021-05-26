@@ -33,7 +33,6 @@ func newMessage(chatID int64, text string) tgbotapi.MessageConfig {
 }
 
 func main() {
-
 	apiKey := flag.String("key", "", "The Telegram bot API key")
 	userID := flag.Int("user", 0, "Restrict bot to given user ID")
 	flag.Parse()

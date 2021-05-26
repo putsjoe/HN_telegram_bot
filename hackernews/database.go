@@ -133,7 +133,7 @@ func (db Database) getSavedPosts(userID int) []hnResponse {
 	}
 	// Prepare statement to get all this data
 	sql := fmt.Sprintf(
-		"SELECT ID,Title,URL FROM posts WHERE ID IN (%s);", strings.Join(sids, ","))
+		"SELECT ID,Title,URL FROM posts WHERE ID IN (%s) LIMIT 30;", strings.Join(sids, ","))
 	rows, err = db.DB.Query(sql)
 	posts := make([]hnResponse, 0)
 	var itm hnResponse
