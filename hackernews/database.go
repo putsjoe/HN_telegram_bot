@@ -109,32 +109,27 @@ func (db Database) stats() (int, int) {
 	return u, t
 }
 
-func (db Database) getSavedPosts(userID int) []hnResponse {
+func (db Database) getSavedPosts(userID int, latest bool) []hnResponse {
 
-	rows, err := db.DB.Query("SELECT postID FROM user WHERE userID=?", userID)
+	var l string = "SELECT ID,Title,URL FROM posts WHERE ID IN (select postID FROM user WHERE userID=?) ORDER BY ID DESC LIMIT 20;"
+	var nl string = "SELECT ID,Title,URL FROM posts WHERE ID IN (select postID FROM user WHERE userID=?) LIMIT 5;"
+	var query string
+
+	switch latest {
+	case true:
+		fmt.Println("Latest")
+		query = l
+	case false:
+		query = nl
+	}
+
+	rows, err := db.DB.Query(query, userID)
 	if err != nil {
 		fmt.Println(err)
 		if err == sql.ErrNoRows {
 			return nil
 		}
 	}
-	var ids []int
-	var id int
-
-	for rows.Next() {
-		rows.Scan(&id)
-		ids = append(ids, id)
-	}
-
-	// Convert ids to strings
-	var sids []string
-	for _, v := range ids {
-		sids = append(sids, strconv.Itoa(v))
-	}
-	// Prepare statement to get all this data
-	sql := fmt.Sprintf(
-		"SELECT ID,Title,URL FROM posts WHERE ID IN (%s) LIMIT 30;", strings.Join(sids, ","))
-	rows, err = db.DB.Query(sql)
 	posts := make([]hnResponse, 0)
 	var itm hnResponse
 

@@ -116,9 +116,9 @@ func TextItems() string {
 }
 
 // GetSavedPosts returns the user's saved posts
-func GetSavedPosts(userID int) string {
+func GetSavedPosts(userID int, latest bool) string {
 	db := Database{DB: InitDB()}
-	posts := db.getSavedPosts(userID)
+	posts := db.getSavedPosts(userID, latest)
 
 	if len(posts) == 0 {
 		return "No Saved Posts"

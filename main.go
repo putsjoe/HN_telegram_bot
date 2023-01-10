@@ -68,6 +68,13 @@ func main() {
 
 		log.Printf("[%d] %s", update.Message.Chat.ID, update.Message.Text)
 
+		if update.Message.Text == "L" {
+			msg := newMessage(update.Message.Chat.ID, "")
+			msg.Text = hackernews.GetSavedPosts(int(update.Message.Chat.ID), true)
+			bot.Send(msg)
+			continue
+		}
+
 		if update.Message.IsCommand() {
 			msg := newMessage(update.Message.Chat.ID, "")
 
@@ -110,8 +117,7 @@ func main() {
 
 			case "saves":
 			case "list":
-				msg.Text = hackernews.GetSavedPosts(int(update.Message.Chat.ID))
-
+				msg.Text = hackernews.GetSavedPosts(int(update.Message.Chat.ID), false)
 			default:
 				msg.Text = "I don't know that command"
 				msg.ReplyMarkup = numericKeyboard
