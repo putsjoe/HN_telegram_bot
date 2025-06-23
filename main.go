@@ -74,6 +74,13 @@ func main() {
 			bot.Send(msg)
 			continue
 		}
+		if update.Message.Text == "P" {
+			msg := newMessage(update.Message.Chat.ID, "")
+			u, t := hackernews.UnreadItems()
+			msg.Text = fmt.Sprintf("pong - Unread: %d  Total: %d", u, t)
+			bot.Send(msg)
+			continue
+		}
 
 		if update.Message.IsCommand() {
 			msg := newMessage(update.Message.Chat.ID, "")
