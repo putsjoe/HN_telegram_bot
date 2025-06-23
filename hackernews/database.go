@@ -15,7 +15,7 @@ type Database struct {
 
 // InitDB initiates the database connection
 func InitDB() *sql.DB {
-	db, err := sql.Open("sqlite3", "./data.sqlite")
+	db, err := sql.Open("sqlite3", "./data-testing.sqlite")
 	if err != nil {
 		log.Fatal(err)
 	}

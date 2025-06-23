@@ -111,6 +111,8 @@ func TextItems() string {
 		text = text + each.Title + "\nScore " + strconv.Itoa(each.Score) +
 			" | /add_" + strconv.Itoa(each.ID) + "\n\n"
 	}
+	text = strings.ReplaceAll(text, "<", "")
+	text = strings.ReplaceAll(text, ">", "")
 
 	return text
 }
@@ -129,5 +131,7 @@ func GetSavedPosts(userID int, latest bool) string {
 		text = text + post.Title + " | /del_" + strconv.Itoa(post.ID) +
 			"\n" + post.URL + "\n\n"
 	}
+	text = strings.ReplaceAll(text, "<", "")
+	text = strings.ReplaceAll(text, ">", "")
 	return text
 }
