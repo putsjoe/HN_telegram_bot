@@ -111,16 +111,16 @@ func (db Database) stats() (int, int) {
 
 func (db Database) getSavedPosts(userID int, latest bool) []hnResponse {
 
-	var l string = "SELECT ID,Title,URL FROM posts WHERE ID IN (select postID FROM user WHERE userID=?) ORDER BY ID DESC LIMIT 20;"
-	var nl string = "SELECT ID,Title,URL FROM posts WHERE ID IN (select postID FROM user WHERE userID=?) LIMIT 5;"
+	var query_list string = "SELECT ID,Title,URL FROM posts WHERE ID IN (select postID FROM user WHERE userID=?) ORDER BY ID DESC LIMIT 20;"
+	var query_latest string = "SELECT ID,Title,URL FROM posts WHERE ID IN (select postID FROM user WHERE userID=?) LIMIT 5;"
 	var query string
 
 	switch latest {
 	case true:
 		fmt.Println("Latest")
-		query = l
+		query = query_latest
 	case false:
-		query = nl
+		query = query_list
 	}
 
 	rows, err := db.DB.Query(query, userID)
