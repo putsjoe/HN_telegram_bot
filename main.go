@@ -76,8 +76,8 @@ func main() {
 		}
 		if update.Message.Text == "P" {
 			msg := newMessage(update.Message.Chat.ID, "")
-			u, t := hackernews.UnreadItems()
-			msg.Text = fmt.Sprintf("pong - Unread: %d  Total: %d", u, t)
+			u, t, s := hackernews.UnreadItems()
+			msg.Text = fmt.Sprintf("Unread: %d  Saved: %d  Total: %d", u, s, t)
 			bot.Send(msg)
 			continue
 		}
@@ -116,8 +116,8 @@ func main() {
 				msg.Text = "type /sayhi or /status."
 
 			case "ping":
-				u, t := hackernews.UnreadItems()
-				msg.Text = fmt.Sprintf("pong - Unread: %d  Total: %d", u, t)
+				u, t, s := hackernews.UnreadItems()
+				msg.Text = fmt.Sprintf("Unread: %d  Saved: %d  Total: %d", u, s, t)
 
 			case "latest":
 				msg.Text = hackernews.TextItems()

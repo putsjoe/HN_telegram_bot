@@ -94,8 +94,8 @@ func DeletePost(userID int, postID int) {
 	db.deletePost(userID, postID)
 }
 
-// UnreadItems returns the number of items in the database unread and total
-func UnreadItems() (int, int) {
+// UnreadItems returns the number of items in the database unread, total and saved
+func UnreadItems() (int, int, int) {
 	db := Database{DB: InitDB()}
 	return db.stats()
 }

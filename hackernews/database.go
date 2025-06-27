@@ -94,8 +94,8 @@ func (db Database) deletePost(userID int, postID int) {
 	}
 }
 
-func (db Database) stats() (int, int) {
-	var u, t int
+func (db Database) stats() (int, int, int) {
+	var u, t, s int
 	exists := db.DB.QueryRow("SELECT count(*) FROM posts WHERE read = 0")
 	err := exists.Scan(&u)
 	if err != nil {
@@ -106,7 +106,13 @@ func (db Database) stats() (int, int) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	return u, t
+	// This should really be restricted by user ID
+	exists = db.DB.QueryRow("SELECT count(*) FROM user")
+	err = exists.Scan(&s)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return u, t, s
 }
 
 func (db Database) getSavedPosts(userID int, latest bool) []hnResponse {
